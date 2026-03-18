@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ekhaya Library</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-image: url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        body.dark {
+            background: #0b1220;
+            color: #e2e8f0;
+        }
+        body.dark .glassmorphism {
+            background: rgba(15, 23, 42, 0.6);
+            border-color: rgba(148, 163, 184, 0.25);
+        }
+        body.dark input,
+        body.dark select,
+        body.dark button {
+            background: rgba(30, 41, 59, 0.8);
+            color: #e2e8f0;
+            border-color: rgba(100, 116, 139, 0.8);
+        }
+        body.dark .bg-white {
+            background: rgba(30, 41, 59, 0.8) !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+    <!-- Login Overlay -->
+    <div id="login-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-lg shadow-lg w-96">
+            <h2 class="text-2xl font-bold mb-4 text-center">Login to Ekhaya</h2>
+            <form id="login-form">
+                <div class="mb-4">
+                    <label class="block text-gray-700">Username</label>
+                    <input type="text" id="username" class="w-full px-3 py-2 border rounded" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700">Password</label>
+                    <input type="password" id="password" class="w-full px-3 py-2 border rounded" required>
+                </div>
+                <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="hidden min-h-screen glassmorphism">
+        <header class="bg-blue-600 bg-opacity-80 text-white p-4 shadow">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold mb-2">Ekhaya Library Dashboard</h1>
+                    <div id="user-role" class="text-sm mb-2"></div>
+                    <div id="analytics" class="flex flex-wrap gap-4 text-sm">
+                        <span>Total Books: <span id="total-books">0</span></span>
+                        <span>Books Out: <span id="checked-out">0</span></span>
+                        <span>Overdue: <span id="overdue-count">0</span></span>
+                    </div>
+                    <div id="overdue-list" class="mt-2 text-xs"></div>
+                </div>
+                <div class="flex gap-2">
+                    <button id="theme-toggle" class="bg-white text-blue-600 px-4 py-2 rounded hover:bg-gray-100">Dark Mode</button>
+                    <button id="send-reminders" class="bg-white text-blue-600 px-4 py-2 rounded hover:bg-gray-100">Send Reminders</button>
+                    <button id="export-btn" class="bg-white text-blue-600 px-4 py-2 rounded hover:bg-gray-100">Export to CSV</button>
+                    <button id="logout-btn" class="bg-white text-blue-600 px-4 py-2 rounded hover:bg-gray-100">Logout</button>
+                </div>
+            </div>
+        </header>
+        <main class="p-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Book Management -->
+                <div class="bg-white bg-opacity-90 p-6 rounded-lg shadow-md">
+                    <h2 class="text-xl font-bold mb-4 text-gray-800">Book Management</h2>
+                    <input type="text" id="book-search" placeholder="Search by title or ISBN" class="w-full px-3 py-2 border border-gray-300 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <ul id="book-list" class="mb-4 space-y-2 max-h-64 overflow-y-auto"></ul>
+                    <form id="add-book-form" class="space-y-3">
+                        <input type="text" id="book-title" placeholder="Book Title" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                        <input type="text" id="book-author" placeholder="Author" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                        <div class="flex gap-2">
+                            <input type="text" id="book-isbn" placeholder="ISBN" class="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                            <button type="button" id="fetch-details" class="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Fetch</button>
+                        </div>
+                        <div id="cover-preview" class="flex items-center gap-2"></div>
+                        <input type="number" id="book-copies" placeholder="Total Copies" min="1" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                        <button type="submit" class="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600 transition duration-200">Add Book</button>
+                    </form>
+                </div>
+
+                <!-- Borrower Tracking -->
+                <div class="bg-white bg-opacity-90 p-6 rounded-lg shadow-md">
+                    <h2 class="text-xl font-bold mb-4 text-gray-800">Borrower Registration</h2>
+                    <ul id="borrower-list" class="mb-4 space-y-2 max-h-64 overflow-y-auto"></ul>
+                    <form id="add-borrower-form" class="space-y-3">
+                        <input type="text" id="borrower-name" placeholder="Full Name" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                        <input type="tel" id="borrower-contact" placeholder="Contact Number" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                        <input type="text" id="book-identifier" placeholder="Book Title or ID" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                        <select id="book-condition" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                            <option value="">Select Book Condition</option>
+                            <option value="New">New</option>
+                            <option value="Fair">Fair</option>
+                            <option value="Damaged">Damaged</option>
+                        </select>
+                        <input type="date" id="due-date" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                        <button type="submit" class="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600 transition duration-200">Issue Book</button>
+                    </form>
+                </div>
+
+                <!-- Member Management -->
+                <div class="bg-white bg-opacity-90 p-6 rounded-lg shadow-md">
+                    <h2 class="text-xl font-bold mb-4 text-gray-800">Member Management</h2>
+                    <div class="mb-4">
+                        <h3 class="text-sm font-semibold text-gray-700">Top Readers</h3>
+                        <ul id="leaderboard" class="mt-2 space-y-1 text-sm text-gray-600"></ul>
+                    </div>
+                    <ul id="member-list" class="mb-4 space-y-2 max-h-64 overflow-y-auto"></ul>
+                </div>
+            </div>
+
+            <!-- Digital Resources -->
+            <div class="mt-6 bg-white bg-opacity-90 p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-bold mb-4 text-gray-800">Digital Resources (PDFs)</h2>
+                <form id="resource-form" class="mb-4 space-y-3">
+                    <input type="text" id="resource-title" placeholder="Resource Title" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    <input type="file" id="resource-file" accept="application/pdf" class="w-full" required>
+                    <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition duration-200">Upload PDF</button>
+                </form>
+                <ul id="resource-list" class="space-y-2 max-h-64 overflow-y-auto"></ul>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
